@@ -1,4 +1,4 @@
-# DocAtDoor
+﻿# DocAtDoor
 
 
 
@@ -125,4 +125,55 @@ Checkpoint 12's latest full suite passed **113 tests in 134.08s** with a disposa
 
 Copy `.env.example` to `.env`. Set a unique `SECRET_KEY`, correct `ALLOWED_HOSTS`, and MySQL credentials. Never commit populated environment files, database exports, or uploaded records. `.github/workflows/ci.yml` configures a MySQL service for the automated test job; the workflow has not been run in GitHub for this checkpoint.
 
-See `FLUTTER.md`, `DOCKER.md`, `GITHUB_ACTIONS.md`, `KUBERNETES.md`, `TERRAFORM.md`, `ANSIBLE.md`, and `DEPLOYMENT.md` for setup and validation status. The Docker/Kubernetes image uses Django's development server and is not production-ready. AWS has not been deployed. No Nginx or Gunicorn is part of the intended runtime.
+See `FLUTTER.md`, `DOCKER.md`, `GITHUB_ACTIONS.md`, `KUBERNETES.md`, `TERRAFORM.md`, `ANSIBLE.md`, and `DEPLOYMENT.md` for setup and validation status. The Docker/Kubernetes image uses Django's development server and is not production-ready.
+
+## AWS Deployment
+
+DocAtDoor has been deployed and browser-tested on **Amazon Web Services (AWS)** using an **Amazon EC2** instance.
+
+### Deployment Environment
+
+- **Cloud Platform:** AWS
+- **Compute:** Amazon EC2
+- **Operating System:** Amazon Linux 2023
+- **Runtime:** Python 3.12
+- **Framework:** Django 5.2
+- **Database:** MariaDB / MySQL-compatible database
+- **Remote Access:** SSH
+- **Network Security:** EC2 Security Groups
+- **Application Port:** 8000
+
+### Deployment Process
+
+1. Created and configured an AWS EC2 instance running Amazon Linux.
+2. Connected to the instance using SSH.
+3. Installed Python and required Linux/system dependencies.
+4. Created a Python virtual environment for the Django application.
+5. Installed project dependencies from `requirements.txt`.
+6. Installed and configured MariaDB on the EC2 instance.
+7. Created the application database and database user.
+8. Configured Django environment variables for the EC2 environment.
+9. Verified Django-to-database connectivity.
+10. Applied Django database migrations successfully.
+11. Created the Django administrator account.
+12. Collected Django static files.
+13. Configured EC2 Security Group rules for SSH and application access.
+14. Started the Django application on the EC2 instance.
+15. Verified the deployed application through the EC2 public IP in a web browser.
+
+### AWS Skills Demonstrated
+
+- Amazon EC2 setup and management
+- Linux server administration
+- SSH remote server management
+- EC2 Security Group configuration
+- Python/Django application deployment
+- MariaDB/MySQL database configuration
+- Environment variable configuration
+- Django migrations and static-file deployment
+- Basic cloud deployment troubleshooting
+
+**Deployment status:** Successfully deployed and browser-tested on AWS EC2.
+
+> Note: The current EC2 deployment uses Django's development server for learning/demo purposes. It is not presented as a production-grade deployment.
+
