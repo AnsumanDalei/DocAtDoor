@@ -1,0 +1,44 @@
+---
+- name: Prepare a restricted DocAtDoor learning host
+  hosts: docatdoor
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Confirm this is Ubuntu before using apt
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.distribution == "Ubuntu"
+        fail_msg: "This preparation playbook currently supports Ubuntu only."
+      tags: [always]
+
+    - name: Install Docker package from the operating system repository
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: true
+      tags: [setup]
+
+    - name: Enable Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+      tags: [setup]
+
+    - name: Create a restricted application preparation directory
+      ansible.builtin.file:
+        path: /opt/docatdoor
+        state: directory
+        owner: root
+        group: root
+        mode: "0750"
+      tags: [setup]
+
+    - name: Explain that deployment is intentionally not performed
+      ansible.builtin.debug:
+        msg: >-
+          Host preparation is complete. This playbook does not publish an app:
+          the repository image runs Django's development server and is not a
+          production deployment. Do not expose it to the public internet.
+      tags: [always]

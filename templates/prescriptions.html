@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Your prescriptions | DocAtDoor{% endblock %}
+{% block content %}
+<section class="dashboard-heading"><div><p class="eyebrow">YOUR CARE DOCUMENTS</p><h1>Prescriptions</h1><p>Find files shared by your doctor after a completed visit.</p></div><a class="button secondary" href="{% url 'records:reports' %}">View medical reports</a></section>
+<section class="panel records-list"><h2>Shared prescriptions</h2>{% for item in prescriptions %}<article class="record-row prescription-row"><span class="record-icon" aria-hidden="true">Rx</span><div><h3>{{ item.original_filename }}</h3><p>Dr. {{ item.doctor.name }} · {{ item.appointment.scheduled_at|date:'d M Y' }}</p>{% if item.notes %}<p>{{ item.notes }}</p>{% endif %}</div><a class="text-link" href="{% url 'records:download_prescription' item.appointment_id %}">Download ↗</a></article>{% empty %}<div class="empty-state"><h3>No prescriptions yet</h3><p>When a doctor shares a prescription after a completed visit, you’ll find it here.</p><a class="button" href="{% url 'appointments:doctors' %}">Find a doctor</a></div>{% endfor %}</section>
+{% endblock %}

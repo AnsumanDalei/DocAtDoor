@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home healthcare, made personal | DocAtDoor{% endblock %}
+{% block content %}
+<section class="hero home-hero">
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="eyebrow-dot"></span> A little more comfort in care</p>
+    <h1>Thoughtful healthcare.<br><em>Right at home.</em></h1>
+    <p class="hero-lede">Connect with verified doctors for a home visit, then keep your appointments and care notes together in one calm, simple place.</p>
+    <form class="hero-search" action="{% url 'appointments:doctors' %}" method="get">
+      <label class="sr-only" for="care-search">Search by doctor or specialty</label>
+      <span class="search-icon" aria-hidden="true">⌕</span>
+      <input id="care-search" type="search" name="q" placeholder="Try “general physician” or a name">
+      <button type="submit">Find a doctor <span aria-hidden="true">→</span></button>
+    </form>
+    <div class="hero-note"><span class="note-check">✓</span> Browse verified doctors · Request a home visit · Follow updates in your dashboard</div>
+  </div>
+  <div class="hero-art" aria-label="Illustration of a home with a care visit">
+    <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+    <div class="art-sun"></div>
+    <div class="art-home"><div class="roof"></div><div class="house"><div class="house-window"></div><div class="house-door"></div></div><div class="house-plant plant-one"></div><div class="house-plant plant-two"></div></div>
+    <div class="floating-card visit-card"><span class="visit-icon">✚</span><span><b>Care, at your pace</b><small>Comfort begins at home</small></span></div>
+    <div class="floating-card verified-card"><span class="verified-icon">✓</span><span><b>Verified professionals</b><small>Profiles reviewed by our team</small></span></div>
+    <span class="art-spark spark-a">✦</span><span class="art-spark spark-b">✳</span>
+  </div>
+</section>
+
+<section class="trust-strip" aria-label="How DocAtDoor supports your care">
+  <div><span class="trust-mark mark-lilac">01</span><span><b>Care that fits your day</b><small>Request a time that works for you</small></span></div>
+  <div><span class="trust-mark mark-peach">02</span><span><b>People you can learn about</b><small>Explore verified doctor profiles</small></span></div>
+  <div><span class="trust-mark mark-mint">03</span><span><b>Your care, in one place</b><small>Appointments and records together</small></span></div>
+</section>
+
+<section class="section services-section">
+  <div class="section-heading"><div><p class="eyebrow">CARE, MADE CLOSER</p><h2>Start with what you need.</h2><p>Doctor home visits can be requested online. For other services, tell us what would help and our team can follow up.</p></div><a class="text-link" href="{% url 'appointments:doctors' %}">Explore doctors <span aria-hidden="true">→</span></a></div>
+  <div class="service-grid">
+    <a class="service-card service-doctor" href="{% url 'appointments:doctors' %}"><span class="service-icon">✚</span><span class="service-tag">BOOKABLE</span><h3>Doctor at home</h3><p>Find a verified doctor and request a visit at your preferred time.</p><span class="service-link">Find a doctor <b>↗</b></span></a>
+    <a class="service-card service-nurse" href="{% url 'core:contact' %}?service=nursing"><span class="service-icon">♡</span><span class="service-tag">ASK OUR TEAM</span><h3>Nursing support</h3><p>Let us know what kind of care would make home feel easier.</p><span class="service-link">Make an enquiry <b>↗</b></span></a>
+    <a class="service-card service-physio" href="{% url 'core:contact' %}?service=physiotherapy"><span class="service-icon">〰</span><span class="service-tag">ASK OUR TEAM</span><h3>Physiotherapy</h3><p>Share your recovery goals and we’ll help you explore next steps.</p><span class="service-link">Make an enquiry <b>↗</b></span></a>
+    <a class="service-card service-diagnostics" href="{% url 'core:contact' %}?service=diagnostics"><span class="service-icon">⌁</span><span class="service-tag">ASK OUR TEAM</span><h3>Tests & diagnostics</h3><p>Ask about at-home testing and diagnostic support in your area.</p><span class="service-link">Make an enquiry <b>↗</b></span></a>
+    <a class="service-card service-nurse" href="{% url 'core:contact' %}?service=elder_care"><span class="service-icon">⌂</span><span class="service-tag">ASK OUR TEAM</span><h3>Elder care</h3><p>Tell us what kind of support could help an older family member at home.</p><span class="service-link">Make an enquiry <b>↗</b></span></a>
+    <a class="service-card service-physio" href="{% url 'core:contact' %}?service=recovery"><span class="service-icon">↗</span><span class="service-tag">ASK OUR TEAM</span><h3>Recovery at home</h3><p>Ask about recovery and post-hospital support options for your household.</p><span class="service-link">Make an enquiry <b>↗</b></span></a>
+  </div>
+</section>
+
+<section class="journey-section">
+  <div class="journey-visual"><div class="journey-sun"></div><div class="journey-window"><span></span><span></span><span></span><span></span></div><div class="journey-plant"></div><div class="journey-caption"><b>Care that meets you where you are.</b><small>Simple steps, thoughtful follow-through.</small></div></div>
+  <div class="journey-copy"><p class="eyebrow">A CLEARER WAY TO GET CARE</p><h2>From first search<br>to follow-up.</h2><p>We make it easier to understand what happens next, so you can focus on feeling cared for.</p>
+    <ol class="steps"><li><span>1</span><div><b>Find a doctor</b><small>Search profiles by name or specialty.</small></div></li><li><span>2</span><div><b>Request your visit</b><small>Choose a time and share the visit details.</small></div></li><li><span>3</span><div><b>Stay in the loop</b><small>Track the request and updates from your dashboard.</small></div></li></ol>
+    <a class="button button-dark" href="{% url 'appointments:doctors' %}">Explore verified doctors <span aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<section class="section trust-section"><div class="trust-panel"><div><p class="eyebrow">BUILT AROUND YOUR PRIVACY</p><h2>Your health information<br>deserves thoughtful care.</h2><p>Medical reports and prescriptions are stored privately and shared only through authenticated, permission-checked pages in your account.</p><a class="text-link" href="{% url 'core:about' %}">How DocAtDoor works <span aria-hidden="true">→</span></a></div><div class="privacy-art"><span class="privacy-halo"></span><div class="privacy-shield">✓</div><span class="privacy-star star-one">✦</span><span class="privacy-star star-two">✧</span><div class="privacy-label">Private by design</div></div></div></section>
+
+<section class="closing-cta"><div><p class="eyebrow">CARE STARTS WITH A CONVERSATION</p><h2>Take the next step<br>at your own pace.</h2><p>Create an account to explore doctors and manage your care journey.</p></div><a class="button button-light" href="{% url 'accounts:register' %}">Create your account <span aria-hidden="true">→</span></a><span class="cta-shape cta-shape-one"></span><span class="cta-shape cta-shape-two"></span></section>
+{% endblock %}

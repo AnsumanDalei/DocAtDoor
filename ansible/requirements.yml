@@ -1,0 +1,3 @@
+---
+# The restricted host-preparation playbook currently uses only ansible.builtin.
+collections: []

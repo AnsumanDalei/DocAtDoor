@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Patient feedback | DocAtDoor{% endblock %}
+{% block content %}
+<section class="dashboard-heading"><div><p class="eyebrow">PATIENT FEEDBACK</p><h1>Your reviews</h1><p>Feedback left by patients after a completed home visit.</p></div></section><section class="panel review-list">{% for review in reviews %}<article class="review-card"><div class="review-score">{{ review.rating }}<small>/5</small></div><div><p class="review-meta">{{ review.patient.name }} · {{ review.created_at|date:'d M Y' }}</p><p>{{ review.comment|default:'The patient left a rating without a written comment.' }}</p></div></article>{% empty %}<div class="empty-state"><span>✦</span><h3>No patient feedback yet</h3><p>Reviews are shared here after completed visits.</p></div>{% endfor %}</section>
+{% endblock %}

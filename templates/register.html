@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Create your account | DocAtDoor{% endblock %}
+{% block content %}
+<section class="account-auth-shell registration-shell" aria-labelledby="register-heading">
+  <aside class="auth-welcome-card registration-welcome">
+    <p class="eyebrow">A CLEARER START TO CARE</p>
+    <span class="auth-symbol" aria-hidden="true">✚</span>
+    <h2>Start with the essentials.</h2>
+    <p>Create a patient account to explore verified doctors and keep your visit details together.</p>
+    <ol class="onboarding-steps" aria-label="Registration steps">
+      <li class="is-current"><span>1</span><span><strong>Your details</strong><small>A few account basics</small></span></li>
+      <li><span>2</span><span><strong>Check your email</strong><small>Confirm it is yours</small></span></li>
+      <li><span>3</span><span><strong>Continue to Home</strong><small>Find your next step</small></span></li>
+    </ol>
+    <p class="privacy-note"><span aria-hidden="true">✓</span> Your password is protected. Only share details needed to set up your account.</p>
+  </aside>
+  <div class="auth-card registration-card">
+    <p class="eyebrow">PATIENT ACCOUNT</p>
+    <h1 id="register-heading">Create your account</h1>
+    <p class="auth-subtitle">Use your own details. We'll send a one-time code to confirm your email.</p>
+    {% if form.non_field_errors %}<div class="form-alert" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    <form method="post" enctype="multipart/form-data" class="account-form registration-form" data-submit-state="Creating your account…" novalidate>
+      {% csrf_token %}
+      <fieldset class="form-section">
+        <legend>Your details</legend>
+        <div class="form-field{% if form.name.errors %} has-errors{% endif %}">
+          <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+          {{ form.name }}
+          {% if form.name.help_text %}<small class="field-help">{{ form.name.help_text }}</small>{% endif %}
+          {% if form.name.errors %}<div class="field-errors" id="{{ form.name.id_for_label }}_errors" role="alert">{{ form.name.errors }}</div>{% endif %}
+        </div>
+        <div class="form-field{% if form.email.errors %} has-errors{% endif %}">
+          <label for="{{ form.email.id_for_label }}">Email address</label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="field-errors" id="{{ form.email.id_for_label }}_errors" role="alert">{{ form.email.errors }}</div>{% endif %}
+        </div>
+        <div class="form-field{% if form.phone.errors %} has-errors{% endif %}">
+          <label for="{{ form.phone.id_for_label }}">Phone number <span class="optional-label">Optional</span></label>
+          {{ form.phone }}
+          {% if form.phone.help_text %}<small class="field-help">{{ form.phone.help_text }}</small>{% endif %}
+          {% if form.phone.errors %}<div class="field-errors" id="{{ form.phone.id_for_label }}_errors" role="alert">{{ form.phone.errors }}</div>{% endif %}
+        </div>
+        <div class="form-grid-two">
+          <div class="form-field{% if form.age.errors %} has-errors{% endif %}">
+            <label for="{{ form.age.id_for_label }}">Age <span class="optional-label">Optional</span></label>{{ form.age }}
+            {% if form.age.errors %}<div class="field-errors" id="{{ form.age.id_for_label }}_errors" role="alert">{{ form.age.errors }}</div>{% endif %}
+          </div>
+          <div class="form-field{% if form.gender.errors %} has-errors{% endif %}">
+            <label for="{{ form.gender.id_for_label }}">Gender <span class="optional-label">Optional</span></label>{{ form.gender }}
+            {% if form.gender.errors %}<div class="field-errors" id="{{ form.gender.id_for_label }}_errors" role="alert">{{ form.gender.errors }}</div>{% endif %}
+          </div>
+        </div>
+        <div class="form-field{% if form.blood_group.errors %} has-errors{% endif %}">
+          <label for="{{ form.blood_group.id_for_label }}">Blood group <span class="optional-label">Optional</span></label>{{ form.blood_group }}
+          {% if form.blood_group.errors %}<div class="field-errors" id="{{ form.blood_group.id_for_label }}_errors" role="alert">{{ form.blood_group.errors }}</div>{% endif %}
+        </div>
+      </fieldset>
+      <fieldset class="form-section security-section">
+        <legend>Secure your account</legend>
+        <div class="form-field{% if form.password.errors %} has-errors{% endif %}">
+          <label for="{{ form.password.id_for_label }}">Password</label>
+          <span class="password-input-wrap">{{ form.password }}<button type="button" class="password-visibility-toggle" aria-label="Show password" aria-pressed="false">Show</button></span>
+          <small class="field-help">{{ form.password.help_text }}</small>
+          {% if form.password.errors %}<div class="field-errors" id="{{ form.password.id_for_label }}_errors" role="alert">{{ form.password.errors }}</div>{% endif %}
+        </div>
+        <div class="form-field{% if form.password_confirm.errors %} has-errors{% endif %}">
+          <label for="{{ form.password_confirm.id_for_label }}">Confirm password</label>
+          <span class="password-input-wrap">{{ form.password_confirm }}<button type="button" class="password-visibility-toggle" aria-label="Show confirmation" aria-pressed="false">Show</button></span>
+          {% if form.password_confirm.errors %}<div class="field-errors" id="{{ form.password_confirm.id_for_label }}_errors" role="alert">{{ form.password_confirm.errors }}</div>{% endif %}
+        </div>
+      </fieldset>
+      <fieldset class="form-section photo-section">
+        <legend>Profile photo <span class="optional-label">Optional</span></legend>
+        <div class="photo-upload-row">
+          <span class="profile-photo-fallback" data-photo-fallback aria-hidden="true">{{ form.instance.initials|default:'+' }}</span>
+          <img class="profile-photo-preview" data-photo-preview alt="Selected profile photo preview" hidden>
+          <div class="form-field{% if form.profile_picture.errors %} has-errors{% endif %}">
+            <label for="{{ form.profile_picture.id_for_label }}">Choose a photo</label>{{ form.profile_picture }}
+            {% if form.profile_picture.help_text %}<small class="field-help">{{ form.profile_picture.help_text }}</small>{% endif %}
+            {% if form.profile_picture.errors %}<div class="field-errors" id="{{ form.profile_picture.id_for_label }}_errors" role="alert">{{ form.profile_picture.errors }}</div>{% endif %}
+          </div>
+        </div>
+      </fieldset>
+      <button class="button auth-primary-button" type="submit">Create patient account <span aria-hidden="true">→</span></button>
+    </form>
+    {% if google_oauth_enabled %}
+      <div class="auth-divider"><span>or</span></div>
+      <a class="google-signin-button" href="{% url 'accounts:google_start' %}"><span class="google-g" aria-hidden="true">G</span>Continue with Google</a>
+    {% else %}
+      <p class="auth-availability" role="note">Google sign-in is not configured on this deployment.</p>
+    {% endif %}
+    <p class="auth-signup-prompt">Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a></p>
+    <p class="auth-legal-note">By creating an account, you agree to use DocAtDoor for non-emergency care coordination. For urgent medical help, contact local emergency services.</p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Settings | DocAtDoor{% endblock %}
+{% block content %}
+<div class="account-page-shell settings-shell">
+  <header class="account-page-header">
+    <div><p class="eyebrow">ACCOUNT PREFERENCES</p><h1>Settings</h1><p>Manage the account options that are available for your DocAtDoor profile.</p></div>
+  </header>
+  <div class="settings-grid">
+    <section class="settings-card" aria-labelledby="settings-profile-heading">
+      <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">◉</span><div><p class="eyebrow">YOUR DETAILS</p><h2 id="settings-profile-heading">Personal information</h2></div></div>
+      <p>Review your contact details and the optional profile information used across your care account.</p>
+      <a class="text-link" href="{% url 'accounts:profile' %}">Edit profile →</a>
+    </section>
+    <section class="settings-card" aria-labelledby="settings-security-heading">
+      <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">⌑</span><div><p class="eyebrow">SIGN-IN</p><h2 id="settings-security-heading">Account &amp; security</h2></div></div>
+      <dl class="settings-facts"><div><dt>Sign-in email</dt><dd>{{ request.user.email }}</dd></div><div><dt>Email verification</dt><dd>{% if request.user.email_verified %}Verified{% else %}Not verified{% endif %}</dd></div></dl>
+      <div class="settings-link-row"><a class="text-link" href="{% url 'accounts:change_password' %}">Change password →</a></div>
+      {% if google_connected %}<p class="connected-account"><span aria-hidden="true">✓</span> Google sign-in is connected to this account.</p>
+      {% elif google_oauth_enabled %}<a class="google-signin-button settings-google-button" href="{% url 'accounts:google_start' %}?intent=link"><span class="google-g" aria-hidden="true">G</span>Connect Google</a>
+      {% else %}<p class="settings-unavailable">Google account connection is unavailable because OAuth is not configured on this deployment.</p>{% endif %}
+    </section>
+    <section class="settings-card" aria-labelledby="settings-notifications-heading">
+      <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">✉</span><div><p class="eyebrow">CARE UPDATES</p><h2 id="settings-notifications-heading">Notifications</h2></div></div>
+      <p>Appointment and record updates are collected in your DocAtDoor inbox. Per-category delivery preferences cannot currently be changed online.</p>
+      <a class="text-link" href="{% url 'notifications:inbox' %}">Open notifications →</a>
+    </section>
+    <section class="settings-card" aria-labelledby="settings-help-heading">
+      <div class="settings-card-heading"><span class="settings-icon" aria-hidden="true">?</span><div><p class="eyebrow">NEED A HAND?</p><h2 id="settings-help-heading">Help &amp; privacy</h2></div></div>
+      <p>Find answers about appointments, records, account access, and the limits of the current service.</p>
+      <div class="settings-link-row"><a class="text-link" href="{% url 'core:faq' %}">Read help &amp; FAQs →</a><a class="text-link" href="{% url 'core:contact' %}">Contact the care team →</a></div>
+    </section>
+  </div>
+</div>
+{% endblock %}

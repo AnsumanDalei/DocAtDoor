@@ -1,0 +1,62 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.sqlite
+*.sqlite3
+*.db
+venv/
+env/
+.venv/
+*.egg-info/
+
+# Environment / secrets
+.env
+__pycache__
+*.pyc
+*.db
+media
+staticfiles
+.env.*
+!.env.example
+
+# Local database
+*.db
+protected_media/
+staticfiles/
+.pytest-tmp*/
+.pytest_cache/
+outputs/
+instance/
+
+# Uploaded files (mounted as volumes in production, not baked into the image)
+media/*
+!media/.gitkeep
+protected_media/*
+!protected_media/reports/.gitkeep
+!protected_media/prescriptions/.gitkeep
+
+# Tests / CI / docs (not needed inside the running container)
+tests/
+docs/
+.github/
+README.md
+DEPLOYMENT.md
+
+# Editor / OS cruft
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Infra folders not needed inside the app image
+terraform/
+ansible/
+jenkins/
+docker/
+flutter_app/
