@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Contact the care team | DocAtDoor{% endblock %}
+{% block content %}
+<section class="contact-intro"><p class="eyebrow">WE'RE HERE TO HELP</p><h1>Tell us what<br><em>would help.</em></h1><p>Ask about home healthcare services and a member of the care team can follow up by email. This form is for service enquiries, not urgent care.</p></section>
+<section class="form-card contact-card"><h2>Send an enquiry</h2>{% if submitted %}<div class="contact-confirmation" role="status"><b>Thanks for reaching out.</b><p>Your enquiry has been recorded for staff review. If a support inbox is configured, the care team has also been notified.</p><a class="text-link" href="{% url 'dashboard:home' %}">Back to DocAtDoor →</a></div>{% else %}<form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<p class="{% if field.is_hidden %}form-hidden{% endif %}">{% if not field.is_hidden %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{% endif %}{{ field }}{% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}{{ field.errors }}</p>{% endfor %}<button type="submit">Send enquiry <span aria-hidden="true">→</span></button></form>{% endif %}</section>
+<p class="contact-note">If you may be experiencing a medical emergency, contact your local emergency services.</p>
+{% endblock %}

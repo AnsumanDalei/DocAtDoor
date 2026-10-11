@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docatdoor-protected-media
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docatdoor-media
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docatdoor-web
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: docatdoor-web
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docatdoor-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: docatdoor-web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: docatdoor-web
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: web
+          image: docatdoor:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DEBUG
+              value: "true"
+            - name: ALLOWED_HOSTS
+              value: localhost,127.0.0.1,docatdoor-web
+            - name: DB_ENGINE
+              value: django.db.backends.mysql
+            - name: DB_NAME
+              value: docatdoor
+            - name: DB_USER
+              value: docatdoor
+            - name: DB_HOST
+              value: docatdoor-db
+            - name: DB_PORT
+              value: "3306"
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: docatdoor-secrets
+                  key: secret-key
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: docatdoor-secrets
+                  key: db-password
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: http
+            initialDelaySeconds: 25
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: protected-media
+              mountPath: /srv/docatdoor/protected_media
+            - name: media
+              mountPath: /srv/docatdoor/media
+      volumes:
+        - name: protected-media
+          persistentVolumeClaim:
+            claimName: docatdoor-protected-media
+        - name: media
+          persistentVolumeClaim:
+            claimName: docatdoor-media

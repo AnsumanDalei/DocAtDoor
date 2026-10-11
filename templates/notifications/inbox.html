@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Notifications | DocAtDoor{% endblock %}
+{% block content %}
+<section class="dashboard-heading"><div><p class="eyebrow">YOUR CARE UPDATES</p><h1>Notifications</h1><p>Appointment changes and new care documents show up here.</p></div><form method="post" action="{% url 'notifications:mark_all_read' %}">{% csrf_token %}<button class="button secondary" type="submit">Mark all as read</button></form></section>
+<section class="panel records-list"><div class="notification-list">{% for notification in notifications %}<article class="notification-card {% if not notification.is_read %}unread{% endif %}"><span class="notification-mark" aria-hidden="true">{% if notification.is_read %}✓{% else %}✦{% endif %}</span><div><p>{{ notification.message }}</p><small>{{ notification.created_at|date:'d M Y · H:i' }}</small></div><form method="post" action="{% url 'notifications:delete' notification.id %}">{% csrf_token %}<button type="submit">Dismiss</button></form></article>{% empty %}<div class="empty-state"><span>✦</span><h3>You're all caught up</h3><p>New appointment updates will appear here.</p></div>{% endfor %}</div></section>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Confirm your email | DocAtDoor{% endblock %}
+{% block content %}
+<section class="account-auth-shell verification-shell" aria-labelledby="verify-heading">
+  <aside class="auth-welcome-card verification-welcome">
+    <p class="eyebrow">ONE QUICK CHECK</p>
+    <span class="auth-symbol" aria-hidden="true">✉</span>
+    <h2>Make sure it's your inbox.</h2>
+    <p>Confirming your email helps protect your account and gives you a place to receive visit updates.</p>
+    <div class="verification-expiry"><strong>10 minutes</strong><span>Each code expires after 10 minutes and can only be used once.</span></div>
+  </aside>
+  <div class="auth-card verification-card">
+    <p class="eyebrow">EMAIL VERIFICATION</p>
+    <h1 id="verify-heading">Enter your code</h1>
+    {% if pending_user %}
+      <p class="auth-subtitle">We sent the code to <strong class="verification-address">{{ pending_user.email }}</strong>. Your registration details are saved; no need to enter the address again.</p>
+    {% else %}
+      <p class="auth-subtitle">Use the 6-digit code sent to the email address you registered.</p>
+    {% endif %}
+    {% if form.non_field_errors %}<div class="form-alert" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    <form method="post" class="account-form" data-submit-state="Checking code…" novalidate>
+      {% csrf_token %}
+      {% if not pending_user %}
+        <div class="form-field{% if form.email.errors %} has-errors{% endif %}">
+          <label for="{{ form.email.id_for_label }}">Email address</label>{{ form.email }}
+          {% if form.email.errors %}<div class="field-errors" id="{{ form.email.id_for_label }}_errors" role="alert">{{ form.email.errors }}</div>{% endif %}
+        </div>
+      {% else %}{{ form.email.as_hidden }}{% endif %}
+      <div class="form-field otp-field{% if form.code.errors %} has-errors{% endif %}">
+        <label for="{{ form.code.id_for_label }}">6-digit code</label>
+        {{ form.code }}
+        <small class="field-help">Enter the code exactly as it appears in your email.</small>
+        {% if form.code.errors %}<div class="field-errors" id="{{ form.code.id_for_label }}_errors" role="alert">{{ form.code.errors }}</div>{% endif %}
+      </div>
+      <button class="button auth-primary-button" type="submit">Confirm email <span aria-hidden="true">→</span></button>
+    </form>
+    <div class="resend-code-panel">
+      <p>Didn't receive a code?</p>
+      <form method="post" action="{% url 'accounts:resend_verification' %}" data-submit-state="Requesting a new code…">
+        {% csrf_token %}
+        {% if pending_user %}<input type="hidden" name="email" value="{{ pending_user.email }}">{% else %}<label class="visually-hidden" for="resend-verification-email">Email address for a new code</label><input id="resend-verification-email" type="email" name="email" autocomplete="email" inputmode="email" placeholder="Email address" required>{% endif %}
+        <button class="button secondary" type="submit">Send a new code</button>
+      </form>
+    </div>
+    <div class="auth-support-links"><a href="{% url 'accounts:login' %}">Back to sign in</a><a href="{% url 'core:faq' %}">Get help</a></div>
+  </div>
+</section>
+{% endblock %}

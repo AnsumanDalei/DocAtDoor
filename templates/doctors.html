@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Find a doctor | DocAtDoor{% endblock %}
+{% block content %}
+<section class="directory-intro"><p class="eyebrow">DOCTOR HOME VISITS</p><h1>Meet care on<br><em>your terms.</em></h1><p>Explore verified doctors and request a home visit at a time that works for you.</p></section>
+<form class="directory-search" method="get"><label for="doctor-search">Search by name or specialty</label><div class="directory-search-row"><input id="doctor-search" name="q" value="{{ search_q }}" placeholder="For example, cardiologist"><button type="submit">Search doctors <span aria-hidden="true">→</span></button></div><div class="directory-filter-grid"><p><label for="filter-specialization">Specialization</label><select id="filter-specialization" name="specialization"><option value="">All specialties</option>{% for value,label in specializations %}<option value="{{ value }}" {% if selected_specialization == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></p><p><label for="filter-area">City or service area</label><input id="filter-area" name="area" value="{{ area_filter }}" placeholder="For example, Demo City"></p><p><label for="filter-experience">Minimum experience</label><input id="filter-experience" name="min_experience" type="number" min="0" max="80" value="{{ min_experience_filter }}" placeholder="Any"></p><p><label for="filter-fee">Maximum visit fee (₹)</label><input id="filter-fee" name="max_fee" type="number" min="0" max="1000000" value="{{ max_fee_filter }}" placeholder="Any"></p></div><div class="directory-filter-actions"><label class="availability-toggle"><input type="checkbox" name="availability" value="all" {% if request.GET.availability == 'all' %}checked{% endif %}> Include doctors who may not be available today</label><a class="text-link" href="{% url 'appointments:doctors' %}">Clear filters</a></div></form>
+<div class="directory-heading"><h2>Verified doctors</h2><span>{{ doctors|length }} profile{{ doctors|length|pluralize }}</span></div>
+<div class="doctor-grid">
+{% for doctor in doctors %}
+  <article class="doctor-card">
+    {% if doctor.profile_picture %}<img class="doctor-avatar doctor-card-photo" src="{{ doctor.profile_picture.url }}" alt="Photo of Dr. {{ doctor.name }}">{% else %}<div class="doctor-avatar" aria-hidden="true">{{ doctor.initials }}</div>{% endif %}
+    <div class="doctor-identity"><div class="doctor-meta"><span class="verified-pill"><i></i> Verified</span>{% if doctor.is_available %}<span class="available-pill">Available</span>{% endif %}</div><h3><a href="{% url 'appointments:doctor_profile' doctor.id %}">Dr. {{ doctor.name }}</a></h3><p class="doctor-specialty">{{ doctor.specialization|default:'General Physician' }}</p></div>
+    <div class="doctor-details">{% if doctor.review_count %}<span>✦ {{ doctor.average_rating|floatformat:1 }} <small>from {{ doctor.review_count }} review{{ doctor.review_count|pluralize }}</small></span>{% endif %}{% if doctor.experience_years %}<span>{{ doctor.experience_years }} years <small>experience</small></span>{% endif %}{% if doctor.qualification %}<span>{{ doctor.qualification }}</span>{% endif %}{% if doctor.service_area %}<span>{{ doctor.service_area }} <small>service area</small></span>{% endif %}</div>
+    <div class="doctor-card-footer"><span class="doctor-fee">{% if doctor.consultation_fee %}₹{{ doctor.consultation_fee }} <small>visit fee</small>{% else %}Fee shared after request{% endif %}</span>
+    {% if user.is_authenticated and user.role == 'patient' and doctor.is_available %}
+      <details class="booking-details"><summary>Choose a visit time <span aria-hidden="true">→</span></summary>
+        <form method="post" action="{% url 'appointments:book' %}" class="visit-request-form" data-slots-url="{% url 'appointments:available_slots' doctor.id %}" data-doctor-name="Dr. {{ doctor.name }}" data-fee="{% if doctor.consultation_fee %}₹{{ doctor.consultation_fee }}{% else %}Fee shared after request{% endif %}" data-timezone="{{ app_timezone }}">
+          {% csrf_token %}<input type="hidden" name="doctor" value="{{ doctor.id }}"><input type="hidden" name="scheduled_at" class="visit-datetime">
+          <ol class="booking-progress" aria-label="Booking steps"><li class="is-complete">Doctor selected</li><li class="is-current" aria-current="step">Choose a time</li><li>Visit details</li><li>Review</li></ol>
+          <div class="booking-entry">
+          <p><label for="visit-date-{{ doctor.id }}">Visit date</label><input id="visit-date-{{ doctor.id }}" type="date" class="visit-date" min="{{ today|date:'Y-m-d' }}" max="{{ max_booking_date|date:'Y-m-d' }}" required></p>
+          <p><label for="visit-time-{{ doctor.id }}">Available time</label><select id="visit-time-{{ doctor.id }}" class="visit-time" required disabled><option value="">Choose a date first</option></select></p>
+          <p class="slot-status" aria-live="polite">Visits are 60 minutes. Times use {{ app_timezone }}.</p>
+          <p><label for="visit-symptoms-{{ doctor.id }}">What would you like help with?</label><textarea id="visit-symptoms-{{ doctor.id }}" name="symptom_description" required></textarea></p>
+          <p><label for="visit-address-{{ doctor.id }}">Street address</label><input id="visit-address-{{ doctor.id }}" name="address" autocomplete="street-address" required></p>
+          <p><label for="visit-locality-{{ doctor.id }}">Locality <span class="muted">(optional)</span></label><input id="visit-locality-{{ doctor.id }}" name="locality" autocomplete="address-level3"></p>
+          <p><label for="visit-city-{{ doctor.id }}">City</label><input id="visit-city-{{ doctor.id }}" name="city" autocomplete="address-level2" required></p>
+          <p><label for="visit-phone-{{ doctor.id }}">Contact number</label><input id="visit-phone-{{ doctor.id }}" name="contact_phone" type="tel" autocomplete="tel" value="{{ user.phone }}" required></p>
+          <button type="button" class="review-request-button" disabled>Review request <span aria-hidden="true">→</span></button>
+          </div>
+          <section class="booking-review" hidden aria-live="polite"><p class="eyebrow">FINAL CHECK</p><h4>Review your visit request</h4><dl><dt>Care</dt><dd data-review="service">Doctor home visit</dd><dt>Doctor</dt><dd data-review="doctor"></dd><dt>Date and time</dt><dd data-review="when"></dd><dt>Visit fee</dt><dd data-review="fee"></dd><dt>Visit details</dt><dd data-review="reason"></dd><dt>Address</dt><dd data-review="address"></dd><dt>Contact number</dt><dd data-review="phone"></dd></dl><p class="review-timezone"></p><div class="booking-review-actions"><button type="button" class="edit-request-button">Edit details</button><button type="submit" class="confirm-request-button" hidden>Confirm visit request</button></div></section>
+        </form>
+      </details>
+    {% elif user.is_authenticated and user.role == 'patient' %}<span class="unavailable-label">Not accepting visits</span>
+    {% elif user.is_authenticated %}<span class="unavailable-label">Patient account required</span>
+    {% else %}<a class="button button-small" href="{% url 'accounts:login' %}?next={% url 'appointments:doctors' %}">Sign in to request</a>{% endif %}</div>
+  </article>
+{% empty %}
+  <div class="empty-state"><span>⌕</span><h3>No profiles found</h3><p>Try another name or specialty, or clear your search to browse all verified doctors.</p><a class="text-link" href="{% url 'appointments:doctors' %}">Clear search <b>→</b></a></div>
+{% endfor %}
+</div>
+{% endblock %}

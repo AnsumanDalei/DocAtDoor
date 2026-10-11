@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | DocAtDoor{% endblock %}
+{% block content %}
+<section class="form-card account-form-card">
+  <p class="eyebrow">{% if title == 'Change password' %}ACCOUNT SECURITY{% else %}YOUR ACCOUNT{% endif %}</p>
+  <h1>{{ title }}</h1>
+  {% if title == 'Choose a new password' %}<p class="auth-subtitle">Choose a password you do not use on other sites. Expired links cannot be reused.</p>{% endif %}
+  {% if form.non_field_errors %}<div class="form-alert" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <form method="post" enctype="multipart/form-data" class="account-form" data-submit-state="Saving…" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-field{% if field.errors %} has-errors{% endif %}">
+        {% if not field.is_hidden %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{% endif %}
+        {{ field }}
+        {% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}
+        {% if field.errors %}<div class="field-errors" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <button class="button auth-primary-button" type="submit">{% if title == 'Change password' %}Update password{% elif title == 'Choose a new password' %}Save new password{% else %}Continue{% endif %}<span aria-hidden="true">→</span></button>
+  </form>
+  {% if title == 'Reset password' %}<p class="auth-support-links"><a href="{% url 'accounts:login' %}">Back to sign in</a></p>{% elif user.is_authenticated %}<p class="auth-support-links"><a href="{% url 'accounts:settings' %}">Back to settings</a><a href="{% url 'accounts:profile' %}">Back to profile</a></p>{% endif %}
+</section>
+{% endblock %}

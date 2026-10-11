@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Confirm verification | DocAtDoor{% endblock %}
+{% block content %}
+<section class="account-auth-shell verification-shell" aria-labelledby="verify-link-heading">
+  <div class="auth-card verification-card">
+    <p class="eyebrow">EMAIL VERIFICATION</p>
+    <h1 id="verify-link-heading">Confirm this email address</h1>
+    <p class="auth-subtitle">This link is for <strong>{{ verification_user.email }}</strong>. Continue only if you opened it for your DocAtDoor account.</p>
+    <form method="post" class="account-form">
+      {% csrf_token %}
+      <button class="button auth-primary-button" type="submit">Confirm email <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="field-help">This link expires 10 minutes after it was issued and works once.</p>
+    <div class="auth-support-links"><a href="{% url 'accounts:login' %}">Back to sign in</a></div>
+  </div>
+</section>
+{% endblock %}

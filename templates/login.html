@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Sign in | DocAtDoor{% endblock %}
+{% block content %}
+<section class="account-auth-shell" aria-labelledby="signin-heading">
+  <aside class="auth-welcome-card">
+    <p class="eyebrow">CARE, CLOSER</p>
+    <span class="auth-symbol" aria-hidden="true">✚</span>
+    <h2>Your care, easier to follow.</h2>
+    <p>Find a doctor, keep track of home visits, and return to your care documents in one secure place.</p>
+    <ul class="auth-benefits">
+      <li>See appointment updates in one inbox</li>
+      <li>Keep reports and prescriptions together</li>
+      <li>Return to your account whenever you need</li>
+    </ul>
+  </aside>
+  <div class="auth-card">
+    {% if account_choices %}
+      <p class="eyebrow">CHOOSE AN ACCOUNT</p>
+      <h1 id="signin-heading">Which account is yours?</h1>
+      <p class="auth-subtitle">These accounts use the same email and password. Choose the account you intended to open.</p>
+      <div class="account-choice-list">
+        {% for account in account_choices %}
+          <form method="post" class="account-choice-form">
+            {% csrf_token %}
+            <button class="account-choice" type="submit" name="account_id" value="{{ account.pk }}">
+              <span class="account-avatar" aria-hidden="true">{{ account.initials }}</span>
+              <span><strong>{{ account.name }}</strong><small>{{ account.get_role_display }} account</small></span>
+              <span class="choice-arrow" aria-hidden="true">→</span>
+            </button>
+          </form>
+        {% endfor %}
+      </div>
+      <a class="auth-secondary-link" href="{% url 'accounts:login' %}">Use a different sign-in</a>
+    {% else %}
+      <p class="eyebrow">WELCOME BACK</p>
+      <h1 id="signin-heading">Sign in to DocAtDoor</h1>
+      <p class="auth-subtitle">Use the email and password for your patient, doctor, or administrator account.</p>
+      {% if form.non_field_errors %}<div class="form-alert" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      <form method="post" class="account-form" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <div class="form-field{% if form.email.errors %} has-errors{% endif %}">
+          <label for="{{ form.email.id_for_label }}">Email address</label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="field-errors" id="{{ form.email.id_for_label }}_errors" role="alert">{{ form.email.errors }}</div>{% endif %}
+        </div>
+        <div class="form-field{% if form.password.errors %} has-errors{% endif %}">
+          <label for="{{ form.password.id_for_label }}">Password</label>
+          <span class="password-input-wrap">{{ form.password }}<button type="button" class="password-visibility-toggle" aria-label="Show password" aria-pressed="false">Show</button></span>
+          {% if form.password.errors %}<div class="field-errors" id="{{ form.password.id_for_label }}_errors" role="alert">{{ form.password.errors }}</div>{% endif %}
+        </div>
+        <div class="auth-form-options">
+          <label class="remember-option" for="{{ form.remember_me.id_for_label }}">{{ form.remember_me }}<span>Remember me on this device</span></label>
+          <a href="{% url 'accounts:forgot' %}">Forgot password?</a>
+        </div>
+        <button class="button auth-primary-button" type="submit">Sign in <span aria-hidden="true">→</span></button>
+      </form>
+      {% if google_oauth_enabled %}
+        <div class="auth-divider"><span>or</span></div>
+        <a class="google-signin-button" href="{% url 'accounts:google_start' %}{% if form.remember_me.value %}?remember=1{% endif %}"><span class="google-g" aria-hidden="true">G</span>Continue with Google</a>
+      {% else %}
+        <p class="auth-availability" role="note">Google sign-in is not configured on this deployment.</p>
+      {% endif %}
+      <p class="auth-signup-prompt">New to DocAtDoor? <a href="{% url 'accounts:register' %}">Create an account</a></p>
+    {% endif %}
+    <div class="auth-support-links"><a href="{% url 'accounts:verify_otp' %}">Verify an email</a><a href="{% url 'core:faq' %}">Help &amp; support</a></div>
+  </div>
+</section>
+{% endblock %}

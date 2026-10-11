@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}About DocAtDoor | Care, closer{% endblock %}
+{% block content %}
+<section class="content-hero about-hero"><p class="eyebrow">CARE, CLOSER</p><h1>Healthcare that<br><em>feels more human.</em></h1><p>DocAtDoor helps patients find verified doctors for a home visit and keep the next steps of care easier to follow.</p><a class="button" href="{% url 'appointments:doctors' %}">Explore doctors <span aria-hidden="true">→</span></a></section>
+<section class="about-values"><article><span>01</span><h2>Start with clarity</h2><p>Search doctor profiles, review the visit fee when available, and see open visit times before requesting.</p></article><article><span>02</span><h2>Keep care connected</h2><p>Appointments, updates, visit notes, reports, and prescriptions are available in your account.</p></article><article><span>03</span><h2>Protect the personal</h2><p>Patient records use authenticated views and permission checks. They are stored away from public media URLs.</p></article></section>
+<p class="scope-note">Doctor home visits are the current bookable service. Other home healthcare categories are service enquiries and depend on support availability.</p>
+{% endblock %}

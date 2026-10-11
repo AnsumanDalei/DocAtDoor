@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Visit summary | DocAtDoor{% endblock %}
+{% block content %}
+{% if read_only %}
+<section class="consultation-shell"><p class="eyebrow">YOUR VISIT SUMMARY</p><h1>Care notes</h1><p class="consultation-meta">Completed {{ consultation.appointment.scheduled_at|date:'d M Y' }} with Dr. {{ consultation.doctor.name }}</p><article class="consultation-section"><h2>Consultation summary</h2><p>{{ consultation.summary|linebreaksbr }}</p></article>{% if consultation.diagnosis %}<article class="consultation-section"><h2>Diagnosis or clinical impression</h2><p>{{ consultation.diagnosis|linebreaksbr }}</p></article>{% endif %}<p class="consultation-note">These notes are provided by your doctor for your care. Contact a healthcare professional if you need clarification.</p><a class="button secondary" href="{% url 'dashboard:home_dashboard' %}">Back to dashboard</a></section>
+{% else %}
+<section class="consultation-shell"><p class="eyebrow">COMPLETED HOME VISIT</p><h1>Visit notes</h1><p class="consultation-meta">Patient: {{ appointment.patient.name }} · {{ appointment.scheduled_at|date:'d M Y, H:i' }}</p><p class="consultation-note">Record the summary for this completed appointment. The patient and assigned care team can view it.</p><form method="post" class="consultation-form">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<p><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}{{ field.errors }}</p>{% endfor %}<button type="submit">Save visit notes</button></form></section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-docatdoor}
+      MYSQL_USER: ${DB_USER:-docatdoor}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+    env_file:
+      - ../.env
+    environment:
+      DEBUG: "true"
+      DB_ENGINE: django.db.backends.mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+    ports:
+      - "8000:8000"
+    volumes:
+      - media:/srv/docatdoor/media
+      - protected_media:/srv/docatdoor/protected_media
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  media:
+  protected_media:

@@ -1,0 +1,110 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'GIT_REPO_URL', defaultValue: '', description: 'Git repository URL to build, e.g. https://github.com/<you>/docatdoor.git')
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'DOCKERHUB_IMAGE', defaultValue: '', description: 'Docker Hub image name, e.g. <you>/docatdoor')
+    }
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+        IMAGE_NAME = "${params.DOCKERHUB_IMAGE}"
+        IMAGE_TAG  = "${env.BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Validate Parameters') {
+            steps {
+                script {
+                    if (!params.GIT_REPO_URL?.trim()) {
+                        error("GIT_REPO_URL is not set. Configure it in the job's 'Build with Parameters' settings, or set a default under the pipeline's parameters.")
+                    }
+                    if (!params.DOCKERHUB_IMAGE?.trim()) {
+                        error("DOCKERHUB_IMAGE is not set. Configure it in the job's 'Build with Parameters' settings, or set a default under the pipeline's parameters.")
+                    }
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                git branch: params.GIT_BRANCH, url: params.GIT_REPO_URL
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements-dev.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    . venv/bin/activate
+                    python manage.py check
+                    pytest tests/ -v --junitxml=test-results.xml
+                '''
+            }
+            post {
+                always {
+                    junit 'test-results.xml'
+                }
+            }
+        }
+
+        stage('Read Version') {
+            steps {
+                script {
+                    env.APP_VERSION = readFile('VERSION').trim()
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build --build-arg APP_VERSION=$APP_VERSION -t $IMAGE_NAME:$IMAGE_TAG -f docker/Dockerfile ."
+                sh "docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$APP_VERSION"
+                sh "docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest"
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+                sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+                sh "docker push $IMAGE_NAME:$APP_VERSION"
+                sh "docker push $IMAGE_NAME:latest"
+            }
+        }
+
+        stage('Deploy via Ansible') {
+            steps {
+                sh '''
+                    ansible-galaxy collection install -r ansible/requirements.yml
+                    ansible-playbook -i ansible/inventory.ini ansible/playbook.yml \
+                        --extra-vars "image_tag=$IMAGE_TAG image_name=$IMAGE_NAME"
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment successful: $IMAGE_NAME:$IMAGE_TAG"
+        }
+        failure {
+            echo "Pipeline failed. Check logs and test-results.xml above."
+        }
+        always {
+            sh "docker logout || true"
+        }
+    }
+}

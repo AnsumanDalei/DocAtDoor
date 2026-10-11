@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}{% if approval_status == 'rejected' %}Application update{% else %}Application under review{% endif %} | DocAtDoor{% endblock %}
+{% block content %}
+<section class="doctor-approval-shell" aria-labelledby="doctor-approval-title">
+  <div class="doctor-approval-card">
+    <div class="doctor-approval-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48" role="presentation" focusable="false">
+        <path d="M15 8v11a9 9 0 0 0 18 0V8M11 8h8M29 8h8M24 28v4a8 8 0 0 0 16 0v-2" />
+        <circle cx="40" cy="27" r="3" />
+      </svg>
+    </div>
+    {% if approval_status == 'rejected' %}
+      <p class="eyebrow">APPLICATION UPDATE</p>
+      <h1 id="doctor-approval-title">Your application was not approved</h1>
+      <p>Our admin team could not approve your doctor registration at this time. If you believe information needs correction or would like to ask about next steps, contact the DocAtDoor team.</p>
+      <div class="doctor-approval-note"><strong>You do not need to register again.</strong><span>Contact support so the team can advise you about this application.</span></div>
+      <a class="button" href="{% url 'core:contact' %}">Contact DocAtDoor support</a>
+    {% else %}
+      <p class="eyebrow">DOCTOR APPLICATION · UNDER REVIEW</p>
+      <h1 id="doctor-approval-title">Your registration has been submitted</h1>
+      <p>Your account is currently under review. Please wait while our admin team verifies your professional details.</p>
+      <div class="doctor-approval-note"><strong>Your doctor dashboard will be available after approval.</strong><span>You do not need to register again. Sign in here later to check your application status.</span></div>
+      <div class="doctor-approval-progress"><span></span><span></span><span></span><b>Application review in progress</b></div>
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="button secondary" type="submit">Sign out</button></form>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
