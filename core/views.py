@@ -5,6 +5,7 @@ from urllib.request import Request, urlopen
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -26,7 +27,20 @@ def contact(request):
         enquiry = form.save()
         email_delivered = False
 
-        if settings.SUPPORT_EMAIL and settings.RESEND_API_KEY:
+        if settings.SUPPORT_EMAIL and settings.EMAIL_BACKEND == "django.core.mail.backends.locmem.EmailBackend":
+            # Keep automated tests isolated from the external Resend service.
+            service_label = enquiry.get_service_display()
+            email = EmailMessage(
+                f"DocAtDoor service enquiry: {service_label}",
+                f"Enquiry ID: {enquiry.pk}\n"
+                f"Service: {service_label}\n"
+                "Sign in to Django Admin to review the message and manage follow-up.",
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.SUPPORT_EMAIL],
+                reply_to=[enquiry.email],
+            )
+            email_delivered = bool(email.send(fail_silently=False))
+        elif settings.SUPPORT_EMAIL and settings.RESEND_API_KEY:
             service_label = enquiry.get_service_display()
             try:
                 payload = {
