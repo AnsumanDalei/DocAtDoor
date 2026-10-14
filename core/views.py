@@ -1,8 +1,10 @@
+import json
 import logging
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -24,22 +26,34 @@ def contact(request):
         enquiry = form.save()
         email_delivered = False
 
-        if settings.SUPPORT_EMAIL:
+        if settings.SUPPORT_EMAIL and settings.RESEND_API_KEY:
             service_label = enquiry.get_service_display()
             try:
-                email = EmailMessage(
-                    f"DocAtDoor service enquiry: {service_label}",
-                    f"Enquiry ID: {enquiry.pk}\n"
-                    f"Service: {service_label}\n"
-                    "Sign in to Django Admin to review the message and manage follow-up.",
-                    settings.DEFAULT_FROM_EMAIL,
-                    [settings.SUPPORT_EMAIL],
-                    reply_to=[enquiry.email],
+                payload = {
+                    "from": settings.RESEND_FROM_EMAIL,
+                    "to": [settings.SUPPORT_EMAIL],
+                    "reply_to": [enquiry.email],
+                    "subject": f"DocAtDoor service enquiry: {service_label}",
+                    "text": (
+                        f"Enquiry ID: {enquiry.pk}\n"
+                        f"Service: {service_label}\n"
+                        "Sign in to Django Admin to review the message and manage follow-up."
+                    ),
+                }
+                request = Request(
+                    "https://api.resend.com/emails",
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={
+                        "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    method="POST",
                 )
-                email_delivered = bool(email.send(fail_silently=False))
-            except Exception:
+                with urlopen(request, timeout=8) as response:
+                    email_delivered = 200 <= response.status < 300
+            except (HTTPError, URLError, TimeoutError, OSError, ValueError):
                 logger.exception(
-                    "Could not send service enquiry %s to the configured support inbox",
+                    "Could not send service enquiry %s through the Resend API",
                     enquiry.pk,
                 )
 
@@ -50,6 +64,8 @@ def contact(request):
                 "Please do not send medical records or urgent-care requests through this form.",
             )
         else:
+            if not (settings.SUPPORT_EMAIL and settings.RESEND_API_KEY):
+                logger.warning("Resend API or support email is not configured; enquiry %s saved without notification", enquiry.pk)
             logger.error(
                 "Service enquiry %s is saved for admin follow-up, but notification email was not delivered",
                 enquiry.pk,
