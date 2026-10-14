@@ -11,14 +11,19 @@ from .forms import ContactForm
 
 logger = logging.getLogger(__name__)
 
+
 def health(request): return JsonResponse({"status": "ok", "time": timezone.now().isoformat()})
 def about(request): return render(request, "pages/about.html")
+
+
 @ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def contact(request):
     initial = {"service": request.GET.get("service", "other")}
     form = ContactForm(request.POST or None, initial=initial)
     if request.method == "POST" and form.is_valid():
         enquiry = form.save()
+        email_delivered = False
+
         if settings.SUPPORT_EMAIL:
             service_label = enquiry.get_service_display()
             try:
@@ -31,15 +36,42 @@ def contact(request):
                     [settings.SUPPORT_EMAIL],
                     reply_to=[enquiry.email],
                 )
-                sent = email.send(fail_silently=False)
+                email_delivered = bool(email.send(fail_silently=False))
             except Exception:
-                logger.exception("Could not send a service enquiry to the configured support inbox")
-                sent = 0
-            if not sent:
-                logger.error("Service enquiry %s is saved for admin follow-up but notification email was not delivered", enquiry.pk)
-        messages.success(request, "Your enquiry has been recorded for staff review. Please do not send medical records or urgent-care requests through this form.")
-        return render(request, "pages/contact.html", {"form": ContactForm(initial=initial), "submitted": True})
+                logger.exception(
+                    "Could not send service enquiry %s to the configured support inbox",
+                    enquiry.pk,
+                )
+
+        if email_delivered:
+            messages.success(
+                request,
+                "Your enquiry was recorded and the notification email was sent. "
+                "Please do not send medical records or urgent-care requests through this form.",
+            )
+        else:
+            logger.error(
+                "Service enquiry %s is saved for admin follow-up, but notification email was not delivered",
+                enquiry.pk,
+            )
+            messages.warning(
+                request,
+                "Your enquiry was saved, but we could not send the email notification. "
+                "Our team will need to review it. Please do not send medical records or urgent-care requests through this form.",
+            )
+
+        return render(
+            request,
+            "pages/contact.html",
+            {
+                "form": ContactForm(initial=initial),
+                "submitted": True,
+                "email_delivered": email_delivered,
+            },
+        )
     return render(request, "pages/contact.html", {"form": form, "submitted": None})
+
+
 def faq(request): return render(request, "pages/faq.html")
 def page_not_found(request, exception): return render(request, "errors/404.html", status=404)
 def server_error(request): return render(request, "errors/500.html", status=500)
