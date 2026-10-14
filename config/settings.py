@@ -61,6 +61,7 @@ GOOGLE_OAUTH_ENABLED = bool(GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRE
 EMAIL_BACKEND = "accounts.backends.RedactedConsoleEmailBackend" if os.getenv("MAIL_ENABLED", "false").lower() != "true" else "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.getenv("MAIL_SERVER", "smtp.gmail.com")
 EMAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
+EMAIL_TIMEOUT = int(os.getenv("MAIL_TIMEOUT", "5"))
 EMAIL_HOST_USER = os.getenv("MAIL_USERNAME", "")
 EMAIL_HOST_PASSWORD = os.getenv("MAIL_PASSWORD", "")
 EMAIL_USE_TLS = True
