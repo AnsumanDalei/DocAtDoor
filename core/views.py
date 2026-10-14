@@ -32,8 +32,7 @@ def contact(request):
             f"Enquiry ID: {enquiry.pk}\n"
             f"Service: {service_label}\n"
             f"Name: {enquiry.name}\n"
-            f"Email: {enquiry.email}\n"
-            f"Phone: {enquiry.phone}\n\n"
+            f"Email: {enquiry.email}\n\n"
             f"Message:\n{enquiry.message}\n\n"
             "Sign in to Django Admin to review the enquiry and manage follow-up."
         )
@@ -72,19 +71,13 @@ def contact(request):
                 )
                 with urlopen(api_request, timeout=12) as response:
                     email_delivered = 200 <= response.status < 300
-                    if not email_delivered:
-                        logger.error(
-                            "Brevo returned HTTP %s for enquiry %s",
-                            response.status, enquiry.pk,
-                        )
-                    else:
+                    if email_delivered:
                         logger.info("Brevo accepted notification for enquiry %s", enquiry.pk)
+                    else:
+                        logger.error("Brevo returned HTTP %s for enquiry %s", response.status, enquiry.pk)
             except HTTPError as exc:
                 error_detail = exc.read().decode("utf-8", errors="replace")
-                logger.error(
-                    "Brevo rejected enquiry %s (HTTP %s): %s",
-                    enquiry.pk, exc.code, error_detail[:1000],
-                )
+                logger.error("Brevo rejected enquiry %s (HTTP %s): %s", enquiry.pk, exc.code, error_detail[:1000])
             except (URLError, TimeoutError, OSError, ValueError):
                 logger.exception("Could not send enquiry %s through the Brevo API", enquiry.pk)
 
