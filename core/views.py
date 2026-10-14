@@ -40,7 +40,7 @@ def contact(request):
                         "Sign in to Django Admin to review the message and manage follow-up."
                     ),
                 }
-                request = Request(
+                api_request = Request(
                     "https://api.resend.com/emails",
                     data=json.dumps(payload).encode("utf-8"),
                     headers={
@@ -49,9 +49,12 @@ def contact(request):
                     },
                     method="POST",
                 )
-                with urlopen(request, timeout=8) as response:
+                with urlopen(api_request, timeout=8) as response:
                     email_delivered = 200 <= response.status < 300
-            except (HTTPError, URLError, TimeoutError, OSError, ValueError):
+            except HTTPError as exc:
+                error_detail = exc.read().decode("utf-8", errors="replace")
+                logger.error("Resend rejected enquiry %s (HTTP %s): %s", enquiry.pk, exc.code, error_detail[:1000])
+            except (URLError, TimeoutError, OSError, ValueError):
                 logger.exception(
                     "Could not send service enquiry %s through the Resend API",
                     enquiry.pk,
