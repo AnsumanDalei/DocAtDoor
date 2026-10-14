@@ -30,7 +30,69 @@ logger = logging.getLogger(__name__)
 
 
 def _mail(user, subject, body):
-    return send_mail(subject, body, None, [user.email], fail_silently=False)
+    """Send account emails through HTTPS APIs when configured (Render may block SMTP)."""
+    if settings.BREVO_API_KEY:
+        payload = {
+            "sender": {
+                "name": settings.BREVO_FROM_NAME,
+                "email": settings.BREVO_FROM_EMAIL,
+            },
+            "to": [{"email": user.email}],
+            "subject": subject,
+            "textContent": body,
+        }
+        request = Request(
+            "https://api.brevo.com/v3/smtp/email",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "api-key": settings.BREVO_API_KEY,
+                "accept": "application/json",
+                "content-type": "application/json",
+                "User-Agent": "DocAtDoor/1.0",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=12) as response:
+                if 200 <= response.status < 300:
+                    logger.info("Brevo accepted account email for user_id=%s", user.pk)
+                    return 1
+                logger.error("Brevo returned HTTP %s for account email user_id=%s", response.status, user.pk)
+        except HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            logger.error("Brevo rejected account email for user_id=%s (HTTP %s): %s", user.pk, exc.code, detail[:1000])
+        except (URLError, TimeoutError, OSError, ValueError):
+            logger.exception("Could not send account email through Brevo for user_id=%s", user.pk)
+
+    if settings.RESEND_API_KEY:
+        payload = {
+            "from": f"{settings.BREVO_FROM_NAME} <{settings.RESEND_FROM_EMAIL}>",
+            "to": [user.email],
+            "subject": subject,
+            "text": body,
+        }
+        request = Request(
+            "https://api.resend.com/emails",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                "Content-Type": "application/json",
+                "User-Agent": "DocAtDoor/1.0",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=12) as response:
+                if 200 <= response.status < 300:
+                    logger.info("Resend accepted account email for user_id=%s", user.pk)
+                    return 1
+        except HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            logger.error("Resend rejected account email for user_id=%s (HTTP %s): %s", user.pk, exc.code, detail[:1000])
+        except (URLError, TimeoutError, OSError, ValueError):
+            logger.exception("Could not send account email through Resend for user_id=%s", user.pk)
+
+    return send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
 
 
 @require_http_methods(["GET", "POST"])
