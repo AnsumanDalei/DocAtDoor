@@ -108,7 +108,7 @@ class RegisterForm(forms.ModelForm):
     password_confirm = forms.CharField(label="Confirm password", widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}), min_length=8)
     role = forms.CharField(
         label="I am registering as",
-        widget=forms.Select(choices=((User.Role.PATIENT, "Patient"), (User.Role.DOCTOR, "Doctor"))),
+        widget=forms.Select(choices=((User.Role.PATIENT, "Patient"), (User.Role.DOCTOR, "Doctor")), attrs={"class": "form-control registration-role-select", "aria-label": "Choose patient or doctor account"}),
         initial=User.Role.PATIENT,
         required=False,
     )
