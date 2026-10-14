@@ -40,6 +40,21 @@ def contact(request):
                 reply_to=[enquiry.email],
             )
             email_delivered = bool(email.send(fail_silently=False))
+        elif settings.SUPPORT_EMAIL and settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
+            service_label = enquiry.get_service_display()
+            email = EmailMessage(
+                f"DocAtDoor service enquiry: {service_label}",
+                f"Enquiry ID: {enquiry.pk}\n"
+                f"Service: {service_label}\n"
+                "Sign in to Django Admin to review the message and manage follow-up.",
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.SUPPORT_EMAIL],
+                reply_to=[enquiry.email],
+            )
+            try:
+                email_delivered = bool(email.send(fail_silently=False))
+            except Exception:
+                logger.exception("Could not send service enquiry %s through configured email backend", enquiry.pk)
         elif settings.SUPPORT_EMAIL and settings.RESEND_API_KEY:
             service_label = enquiry.get_service_display()
             try:
@@ -82,8 +97,8 @@ def contact(request):
                 "Please do not send medical records or urgent-care requests through this form.",
             )
         else:
-            if not (settings.SUPPORT_EMAIL and settings.RESEND_API_KEY):
-                logger.warning("Resend API or support email is not configured; enquiry %s saved without notification", enquiry.pk)
+            if not (settings.SUPPORT_EMAIL and (settings.RESEND_API_KEY or (settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD))):
+                logger.warning("Email provider or support email is not configured; enquiry %s saved without notification", enquiry.pk)
             logger.error(
                 "Service enquiry %s is saved for admin follow-up, but notification email was not delivered",
                 enquiry.pk,
